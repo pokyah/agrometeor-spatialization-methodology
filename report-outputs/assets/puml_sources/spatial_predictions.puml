@@ -1,0 +1,17 @@
+@startuml
+start
+      partition "spatial prediction" {
+            :read an hourly records;
+        while (target **weather param** (w) ?) is (not spatialized)
+            :predict on 1km² grid
+            using choosen best
+            combination of learner + task;
+            :compute SE for each predicted cell;
+            :make combined map of prediction + uncertainty;
+            :write map data on the db and make available publicly; 
+        endwhile
+        :w+1;
+      }
+stop
+title __spatial prediction__\n
+@enduml

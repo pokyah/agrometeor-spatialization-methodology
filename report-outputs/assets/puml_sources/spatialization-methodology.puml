@@ -1,0 +1,136 @@
+@startuml
+start
+  :Agrometeor Docker container started;
+  split
+  partition "retrieve dataset from historical dataset" {
+    fork
+	:select
+        "good" stations;
+    fork again
+	:select
+        tsa, hra, hct;
+    fork again
+        :filter
+        fixed representative subset of records
+        (e.g. __5 years of continuous hourly records__); 
+    end fork
+    :make agromet API call;
+    :prepare the data
+    (remove NA records,
+     type the vars);
+    :save the 
+    **historical hourly records**
+    dataset;
+  }
+  split again
+  partition "objects instantiation" {
+    :instantiate;
+    split
+      :**weather params list**
+      (tsa, hra, hct);
+    split again
+        :**learners list**
+        (e.g. kriging, multiple regressions, ANN, etc);
+    split again
+        :**tasks list**
+        (unique combinations of 
+        target weather param 
+        + explanatory variables);
+    split again
+        :empty LOOCV
+        **performance measures list**
+        (e.g. RMSE, MAE, etc);
+    end split
+    :save lists objects for later calls;
+    detach
+  }
+   end split
+  partition "benchmark"{
+split
+    :read historical hourly records
+  dataset;
+  split again
+    :read weather params list;
+  end split
+  partition "target weather parameter" {
+    while (**target weather param** (w) ?) is (not investigated)
+      fork
+        :select all explanatory vars;
+      fork again
+        :select target weather param;
+      end fork
+      :group_by hourly sets of records;
+      partition "hourly set of records" {
+        while (**hourly set** (h) ?) is (not investigated)
+          :read learners list;
+          partition "learner" {
+            while (**learner** (l) ?) is (not benchmarked)
+             :read tasks list;
+             partition "task" {
+               while (**task** (t) ?) is (not passed to current learner)
+                 :make a **LOOCV** resampling strategy 
+                 by repeatedly //training// the learner
+                 on the N-1 records of the task;
+                 :save the LOOCV 
+                 **performance measures** (p)
+                 for current (t) of current (l) of current (h) of current (w)
+                 into the LOOCV performance measures list;
+                 :t+1;
+               endwhile
+             }
+            :l+1; 
+	    endwhile
+         }
+        :h +1;
+        endwhile
+      }
+
+    :w+1;
+    endwhile
+  }  
+}
+partition "global performance assessement" {
+      split
+:read the LOOCV performances measures list;
+        split again
+        :read weather params list;
+        end split
+ while (target **weather param** learner + task(w) ?) is (not globally assessed)
+        while (performance measure (p) ?) is (not aggregated)
+            :aggregate on all hourly_sets
+            by computing the means
+            of the performances measures;
+            :save the aggregated means
+            into LOOCV performance measures list;
+            :p+1;
+        endwhile
+        :read LOOCV_performance_measures_list$aggregated;
+        :compare all 
+        the aggregated means of performance measures;
+        :choose the best combination
+        of learner + task for current weather param;
+         :w+1;
+        endwhile
+  
+      }
+            partition "spatial prediction" {
+split
+            :read an hourly record;
+split again
+:read weather params list;
+end split
+        while (target **weather param** (w) ?) is (not spatialized)
+            :predict on 1km² grid
+            using choosen best
+            combination of learner + task;
+            :compute SE for each predicted cell;
+            :make combined map of prediction + uncertainty;
+            :write map data on the db and make available publicly; 
+                :w+1;
+        endwhile
+      }
+  
+      
+stop      
+title __Spatialization methodology__\n
+@enduml

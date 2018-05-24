@@ -1,0 +1,24 @@
+@startuml
+start
+split
+  partition "retrieve dataset from historical dataset" {
+    :view [[./historical_data.svg]];
+  }
+split again
+  partition "objects instantiation" {
+    :view [[./objects_instantiation.svg]];
+  }
+  detach
+end split
+partition "benchmark" {
+:view [[./benchmark.svg]];
+}
+partition "performance assessment" {
+    :view [[./performance_assessment.svg]];
+}
+partition "spatial predictions" {
+    :view [[./spatial_predictions.svg]];
+}
+stop
+title __skeleton__\n
+@enduml

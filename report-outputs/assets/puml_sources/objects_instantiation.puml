@@ -1,0 +1,25 @@
+@startuml
+start
+partition "objects instantiation" {
+    :instantiate;
+    split
+      :**weather params list**
+      (tsa, hra, hct);
+    split again
+        :**learners list**
+        (e.g. kriging, multiple regressions, ANN, etc);
+    split again
+        :**tasks list**
+        (unique combinations of 
+        target weather param 
+        + explanatory variables);
+    split again
+        :empty LOOCV
+        **performance measures list**
+        (e.g. RMSE, MAE, etc);
+    end split
+    :save lists objects for later calls;
+    detach
+  }
+title __objects instantiation__\n
+@enduml

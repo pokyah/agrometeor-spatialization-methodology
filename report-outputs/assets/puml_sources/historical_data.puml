@@ -1,0 +1,25 @@
+@startuml
+start
+  partition "retrieve dataset from historical dataset" {
+    fork
+	:select
+        "good" stations;
+    fork again
+	:select
+        tsa, hra, hct;
+    fork again
+        :filter
+        fixed representative subset of records
+        (e.g. __5 years of continuous hourly records__); 
+    end fork
+    :make agromet API call;
+    :prepare the data
+    (remove NA records,
+     type the vars);
+    :save the 
+    **historical hourly records**
+    dataset;
+  }
+   :start [[./benchmark.svg]];
+title __retrieve dataset from historical dataset__\n
+@enduml

@@ -1,0 +1,20 @@
+@startuml
+start
+      partition "global performance assessment" {
+            :read the LOOCV performances measures list;
+        while (performance measure (p) ?) is (not aggregated)
+            :aggregate on all hourly_sets
+            by computing the means
+            of the performances measures;
+            :save the aggregated means
+            into LOOCV performance measures list;
+            :p+1;
+        endwhile
+        :read LOOCV_performance_measures_list$aggregated;
+        :compare all aggregated means of performance measures;
+        :choose the best combination
+        of learner + task;
+        :start [[./spatial_predictions.svg]];
+      }
+title __performance assessement__\n
+@enduml

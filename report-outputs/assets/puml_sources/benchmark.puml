@@ -1,0 +1,46 @@
+@startuml
+start
+partition "benchmark"{
+split
+    :read historical hourly records
+  dataset;
+  split again
+    :read weather params list;
+  end split
+  partition "target weather parameter" {
+    while (**target weather param** (w) ?) is (not investigated)
+      fork
+        :select all explanatory vars;
+      fork again
+        :select target weather param;
+      end fork
+      :group_by hourly sets of records;
+      partition "hourly set of records" {
+        while (**hourly set** (h) ?) is (not investigated)
+          :read learners list;
+          partition "learner" {
+            while (**learner** (l) ?) is (not benchmarked)
+              :read tasks list;
+              partition "task" {
+                while (**task** (t) ?) is (not passed to current learner)
+                  :make a **LOOCV** resampling strategy 
+                  by repeatedly //training// the learner
+                  on the N-1 records of the task;
+                  :save the LOOCV 
+                  **performance measures** (p)
+                  for current (t) of current (l) of current (h) of current (w)
+                  into the LOOCV performance measures list;
+                  :t+1;
+                endwhile
+              }
+            :l+1; 
+	          endwhile
+           }
+        :h +1;
+        endwhile
+      }
+      :w+1;
+      endwhile
+      :start [[./performance_assessment.svg]];
+title __benchmark__\n
+@enduml
